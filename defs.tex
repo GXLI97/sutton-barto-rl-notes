@@ -1,0 +1,155 @@
+\usepackage{amsmath,amssymb,amsthm}
+\usepackage{xcolor}
+\usepackage{mathtools}
+\usepackage{enumitem}
+\usepackage{bbm}
+\usepackage{semantic}
+\usepackage{listings}
+\usepackage{courier}
+\usepackage{tikz}
+\usetikzlibrary{calc}
+\usepackage{color}
+\usepackage{fancyhdr}
+\usepackage{lastpage}
+% \usepackage{subcaption}
+
+\definecolor{codegreen}{rgb}{0,0.6,0}
+\definecolor{codegray}{rgb}{0.5,0.5,0.5}
+\definecolor{codepurple}{rgb}{0.58,0,0.82}
+\definecolor{backcolour}{rgb}{0.95,0.95,0.92}
+ 
+\lstdefinestyle{mystyle}{
+    backgroundcolor=\color{backcolour},   
+    commentstyle=\color{codegreen},
+    keywordstyle=\color{magenta},
+    numberstyle=\tiny\color{codegray},
+    stringstyle=\color{codepurple},
+    basicstyle=\footnotesize,
+    breakatwhitespace=false,         
+    breaklines=true,                 
+    captionpos=b,                    
+    keepspaces=true,                 
+    numbers=left,                    
+    numbersep=5pt,                  
+    showspaces=false,                
+    showstringspaces=false,
+    showtabs=false,                  
+    tabsize=2,
+    basicstyle=\footnotesize\ttfamily
+}
+
+\lstset{style=mystyle}
+
+\usepackage{hyperref}
+
+\DeclareMathOperator*{\E}{\mathbb{E}}
+\let\Pr\relax
+\DeclareMathOperator*{\Pr}{\mathrm{Pr}}
+
+\newcommand{\eps}{\epsilon}
+\DeclareMathOperator*{\argmax}{arg\,max}
+\DeclareMathOperator*{\argmin}{arg\,min}
+\newcommand{\inprod}[1]{\left\langle #1 \right\rangle}
+\newcommand{\R}{\mathbb{R}}
+
+\newcommand{\norm}[1]{\left\lVert#1\right\rVert}
+\newcommand{\abs}[1]{\left\lvert#1\right\rvert}
+\newcommand{\paren}[1]{\left(#1\right)}
+\newcommand{\innerprod}[1]{\left\langle#1\right\rangle}
+\newcommand{\sqb}[1]{\left[#1\right]}
+\newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
+\newcommand{\setmath}[1]{\left\{#1\right\}}
+\newcommand*\xor{\mathbin{\oplus}}
+\newcommand{\ceil}[1]{\left\lceil#1\right\rceil}
+\newcommand{\floor}[1]{\left\lfloor#1\right\rfloor}
+\newcommand{\bigoh}[1]{\mathcal{O}\paren{#1}}
+\newcommand{\gaussian}[2]{\mathcal{N}\paren{#1, #2}}
+\newcommand{\myfunc}[3]{#1\colon#2\to#3}
+
+% \theoremstyle{definition}
+
+\newenvironment{proofoutline}
+ {\renewcommand\qedsymbol{}\proof[Proof outline]}
+ {\endproof}
+
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem*{lemma*}{Lemma}
+\newtheorem*{theorem*}{Theorem}
+\newtheorem{corollary}[theorem]{Corollary}
+\newtheorem{remark}{Remark}
+\newtheorem*{remark*}{Remark}
+% \newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{lemma}{Lemma}[section]
+% \newtheorem{example}[theorem]{Example}
+\newtheorem{example}{Example}[section]
+\newtheorem{observation}[theorem]{Observation}
+\newtheorem{proposition}[theorem]{Proposition}
+% \newtheorem{definition}[theorem]{Definition}
+\newtheorem{definition}{Definition}[section]
+\newtheorem{claim}[theorem]{Claim}
+% \newtheorem{fact}[theorem]{Fact}
+\newtheorem{fact}{Fact}[section]
+\newtheorem{assumption}[theorem]{Assumption}
+\newtheorem{conjecture}{Conjecture}[section]
+\newtheorem*{conjecture*}{Conjecture}
+% \newtheorem{problem}[theorem]{Problem}
+\newtheorem{problem}{Problem}
+% \numberwithin{problem}{subsection}
+\newtheorem*{problem*}{Problem}
+\newenvironment{solution}
+  {\begin{proof}[Solution]}
+  {\end{proof}}
+
+\newcommand*\diff{\mathop{}\!\mathrm{d}}
+\newcommand*\Diff[1]{\mathop{}\!\mathrm{d^#1}}
+
+\DeclareMathOperator{\Tr}{Tr}
+\DeclareMathOperator{\prox}{prox}
+\DeclareMathOperator{\var}{var}
+\DeclareMathOperator{\dom}{dom}
+\DeclareMathOperator{\rk}{rk}
+\DeclareMathOperator{\nul}{nul}
+\DeclareMathOperator{\sign}{sign}
+\DeclareMathOperator{\dual}{dual}
+\DeclareMathOperator{\im}{im}
+\DeclareMathOperator{\Span}{Span}
+\DeclareMathOperator{\cost}{cost}
+\DeclareMathOperator{\diam}{diam}
+
+\newcommand{\exv}[1]{\E\sqb{#1}}
+\newcommand{\expv}[1]{\mathrm{exp}\paren{#1}}
+\newcommand{\prv}[1]{\Pr\sqb{#1}}
+\newcommand{\logv}[1]{\log\paren{#1}}
+\newcommand{\diag}[1]{\mathrm{diag}\paren{#1}}
+\newcommand{\linf}{\ell_{\infty}}
+\newcommand{\suchthat}{~\middle|~}
+
+\makeatletter
+\newcommand{\vo}{\vec{o}\@ifnextchar{^}{\,}{}}
+\makeatother
+
+\newcommand*{\vertbar}{\rule[-1ex]{0.5pt}{2.5ex}}
+\newcommand*{\horzbar}{\rule[.5ex]{2.5ex}{0.5pt}}
+
+\newcommand{\mvar}[1]{\mathit{#1}}
+\newcommand{\qt}[1]{\mbox{`#1'}}
+
+\usepackage{tcolorbox}
+\usepackage{subfigure} 
+
+% For citations
+\usepackage{natbib}
+
+% For algorithms
+% \usepackage[section]{algorithm}
+\usepackage{algorithm}
+\usepackage{algorithmic}
+
+% disable the below lines if you want auto-indent
+\newlength\tindent
+\setlength{\tindent}{\parindent}
+\setlength{\parindent}{0pt}
+\renewcommand{\indent}{\hspace*{\tindent}}
+
+\numberwithin{equation}{section}
+\numberwithin{algorithm}{problem}
