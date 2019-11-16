@@ -11,6 +11,7 @@
 \usepackage{color}
 \usepackage{fancyhdr}
 \usepackage{lastpage}
+\usepackage{dsfont}
 % \usepackage{subcaption}
 
 \definecolor{codegreen}{rgb}{0,0.6,0}
@@ -49,13 +50,14 @@
 \newcommand{\eps}{\epsilon}
 \DeclareMathOperator*{\argmax}{arg\,max}
 \DeclareMathOperator*{\argmin}{arg\,min}
-\newcommand{\inprod}[1]{\left\langle #1 \right\rangle}
+\newcommand{\inprod}[1]{\langle #1 \rangle}
+\newcommand{\innerprod}[1]{\left\langle #1 \right\rangle}
 \newcommand{\R}{\mathbb{R}}
 
 \newcommand{\norm}[1]{\left\lVert#1\right\rVert}
 \newcommand{\abs}[1]{\left\lvert#1\right\rvert}
 \newcommand{\paren}[1]{\left(#1\right)}
-\newcommand{\innerprod}[1]{\left\langle#1\right\rangle}
+
 \newcommand{\sqb}[1]{\left[#1\right]}
 \newcommand{\Mod}[1]{\ (\mathrm{mod}\ #1)}
 \newcommand{\setmath}[1]{\left\{#1\right\}}
@@ -65,7 +67,10 @@
 \newcommand{\bigoh}[1]{\mathcal{O}\paren{#1}}
 \newcommand{\gaussian}[2]{\mathcal{N}\paren{#1, #2}}
 \newcommand{\myfunc}[3]{#1\colon#2\to#3}
-
+\newcommand{\poly}{\text{poly}}
+\newcommand{\cond}[1]{\text{cond}\left(#1\right)}
+\newcommand{\ind}[1]{\mathds{1}\{#1\}}
+\newcommand{\rank}[1]{\text{rank}(#1)}
 % \theoremstyle{definition}
 
 \newenvironment{proofoutline}
@@ -87,6 +92,7 @@
 % \newtheorem{definition}[theorem]{Definition}
 \newtheorem{definition}{Definition}[section]
 \newtheorem{claim}[theorem]{Claim}
+\newtheorem*{claim*}{Claim}
 % \newtheorem{fact}[theorem]{Fact}
 \newtheorem{fact}{Fact}[section]
 \newtheorem{assumption}[theorem]{Assumption}
@@ -146,10 +152,10 @@
 \usepackage{algorithmic}
 
 % disable the below lines if you want auto-indent
-\newlength\tindent
-\setlength{\tindent}{\parindent}
-\setlength{\parindent}{0pt}
-\renewcommand{\indent}{\hspace*{\tindent}}
+% \newlength\tindent
+% \setlength{\tindent}{\parindent}
+% \setlength{\parindent}{0pt}
+% \renewcommand{\indent}{\hspace*{\tindent}}
 
 \numberwithin{equation}{section}
 \numberwithin{algorithm}{problem}

@@ -8,19 +8,23 @@
 \usepackage{parskip}
 
 \title{Notes on Reinforcement Learning}
-\author{Gene Li}
+\author{Gene Li\\ \url{gene@ttic.edu}}
 
 \begin{document}
 \maketitle
+\begin{abstract}
+    These notes more or less follow the standard presentation found in Sutton and Barto. At times I have rearranged or omitted material to make it clearer for myself to understand.
+\end{abstract}
 
-\abstract{These notes more or less follow the standard presentation found in Sutton and Barto. At times I have rearranged material to make it clearer for myself to understand.}
+% because the material starts on chapter 2...
+\setcounter{section}{1}
 
-\section{Mult-Armed Bandits}
-The multi-armed bandit (MAB) problem represents a simple first stab at understanding reinforcement learning. The structure of MAB is simple in the sense that we do not need to worry about state transitions; each action that the player takes in a round proceeds independently in some sense.
+\section{Multi-Armed Bandits}
+The multi-armed bandit (MAB) problem represents a simple first swipe at understanding reinforcement learning. The structure of MAB is simple in the sense that we do not need to worry about state transitions; each action that the player takes in a round proceeds independently.
 
 First, we define the multi-armed bandit setup.
 
-\begin{definition}[Mult-Armed Bandit]
+\begin{definition}[Multi-Armed Bandit]
     Consider the following learning problem. At each round $t=1,2,...,T$, the player selects one action among $k$ choices, denoted $A_t \in [k]$ (typically called \textbf{arms}). They receive a reward $r_t \sim R_t(A_t)$, where $R_t$ is some distribution which depends on the action $a_t$. 
     
     We define the \textbf{expected reward} of action $a$ as:
@@ -31,9 +35,135 @@ First, we define the multi-armed bandit setup.
 
 Roughly speaking, the goal of the player is to select the action(s) $A_t$ which give the greatest reward $R_t$. However, a priori, the player does not know the distributions $R_t(a)$, so they must trade-off between learning these distributions (called \textit{exploration}) and selecting the action which they believe gives the greatest reward (called \textit{exploitation}).
 
-\subsection{Exploitation: Greedy and $\eps$-Greedy Actions}
-Test test test
+\subsection{Greedy and $\eps$-Greedy}
 
-\subsection{Exploration: Estimating the Expected Reward}
+Suppose at time $t$ we have a method for estimating the expected reward for each action $a$, i.e. we know the values:
+\begin{equation}
+    Q_t(a) \approx q_\star(a) \text{ for all } a\in[k].
+\end{equation}
+
+A simple way to get values of $Q_t(a)$ is to set it to the empirical mean of all rewards we accrued whenever we selected action $a$:
+\begin{equation}
+    Q_t(a) := \frac{\sum_{i=1}^{t-1} R_i \ind{A_i = a}}{\sum_{i=1}^{t-1} \ind{A_i = a}}.
+\end{equation}
+
+How can we exploit this knowledge? 
+\begin{definition}[greedy]
+    Select $a_t := \argmax_a Q_t(a)$.
+\end{definition}
+
+\begin{definition}[$\eps$-greedy]
+    Select the greedy action ($a_t := \argmax_a Q_t(a)$) with probability $1-\eps$ and select a non-greedy action with probability $\eps$ uniformly at random.
+\end{definition}
+
+\subsection{Incremental Updates}
+The main point is that we can write our updates of the action-value pairs $Q_t(a)$ in an incremental fashion, as:
+\begin{equation}
+    Q_{t+1}(a_t) = Q_{t}(a_t) + \eta (R_t(a_t) - Q_{t}(a_t)),
+\end{equation}
+
+i.e. when we choose action $a_t$ we update our $Q_t$ proportional to the discrepancy between the true reward we got $R_t$ and our previous belief of the reward $R_t$.
+
+Note that this generalizes the empirical mean estimation strategy, simply set $\eta = 1/n$. Generally, one can choose $\eta$ to be some function of $n$. If we choose $\eta = \bigoh(1)$, our $Q_t$ may never converge, but if our distributions $R_t$ are nonstationary, this may be desirable.
+
+\subsection{Upper Confidence Bound}
+\begin{definition}[Upper Confidence Bound]
+Select actions as: $A_t := \argmax_a \{Q_t(a) + c \sqrt{\frac{\ln t}{N_t(a)}}\}$.
+\end{definition}
+There is some nice theory for why UCB is a good idea, but this book doesn't go into it. Intuitively this is trying to actions according to our upper confidence bound on the true mean. If we have less samples for an action, we will have a higher upper confidence bound so we should continue sampling those actions.
+
+\subsection{Gradient Bandit}
+Another thing we can do is model each action as a scalar value, $H_t(a) \in R$. Then we select each arm proportional to the soft-max over the $H_t$:
+\begin{equation}
+    \Pr[A_t = a] := \frac{e^{H_t(a)}}{\sum_b e^{H_t(b)}}.
+\end{equation}
+We can update the values $H_t$ according to a gradient ascent algorithm, as $H_{t+1} := H_t(a) + \eta \frac{\partial \E[R_t]}{\partial H_t(a)}$, which gives us the form in their Eq. 2.12.
+
+\section{Finite Markov Decision Processes}
+
+We begin by formalizing the problem definition of finite MDPs. In the MAB problem, we could pull each arm independently in the sense that the reward we earned did not depend on previous pulls. However, finite MDPs have this extra notion of ``state'' which complicates matters: our reward is a function of both the state and the action.
+
+\begin{definition}[Finite MDP]
+At each time step $t = 0,1,2,3...$, the player is in a state $S_t \in \mathcal{S}$. The player makes an action $A_t \in \mathcal{A}$, and receives reward $R_{t+1}(S_t, A_t) \in \mathcal{R}$, then transitioning to a new state $S_{t+1}$. For finite MDPs, $\mathcal{S}, \mathcal{A}, and \mathcal{R}$ are all finite sets.
+
+We can completely characterize the MDP in terms of the \emph{dynamics}, which are given by $p(s', r|s,a) := \Pr [S_t = s', R_t = r | S_{t-1}=s, A_{t-1}=a]$ (This is where the Markov part comes in).
+
+Note that using this, we can marginalize to compute other functions of interest.
+
+\end{definition}
+
+The name of the game for MDPs is for the player to maximize their expected cumulative reward of playing the MDP.
+
+\paragraph{Time Horizons.} We need to have some notion of the ``time horizon''. The MDP can proceed forever, and we call this ``infinite time horizon''. Or, the MDP can terminate after some steps, and we restart the MDP. This is an example of episodic learning, where each trajectory is an episode of learning.
+
+Note that when we are in the infinite time horizon, in order for the sequence $\sum_{k=t}^\infty R_k$ to converge, we can apply something called \emph{discounting}, which weights future rewards less: $\sum_{k=0}^\infty \gamma^k R_{t+k+1}$, for some $\gamma \in [0,1]$.
+
+One point that is made is that we can essentially consider episodic learning within the infinite time horizon setting, by considering the terminating state as an infinite loop with 0 reward.
+
+\subsection{Policy and Value Functions}
+\begin{definition}
+Define a \emph{policy} $\pi: \mathcal{S} \times \mathcal{A} \to [0,1]$ which expresses the probability of an agent taking action $a$ given that they are in state s, i.e. $\pi(a|s) = \Pr[A_t = a |S_t = s]$. 
+
+Here, we consider \emph{static} policies, i.e. $\pi$ doesn't depend on $t$, however one can also consider changing policies $\pi_t$.
+\end{definition}
+
+\begin{definition}
+Define the \emph{state-value function} $v_\pi(s): \mathcal{S} \to \R$ as the expected return when starting in $s$, following $\pi$:
+\begin{equation}
+    v_\pi(s) := \E_{\pi}\left[\sum_{k=0}^\infty \gamma^k R_{t+k+1} | S_t = s\right]
+\end{equation}
+\end{definition}
+
+\begin{definition}
+Define the \emph{action-value} function $q_\pi(s,a): \mathcal{S}\times \mathcal{A} \to \R$ as the expected return starting in state $s$, choosing $a$ initially and then following $\pi$:
+\begin{equation}
+    q_\pi(s,a) := \E_\pi \left[\sum_{k=0}^\infty \gamma^k R_{t+k+1} | S_t = s, A_t=a\right].
+\end{equation}
+\end{definition}
+
+\subsection{Bellman Equations.}
+Note the following condition for $v_\pi(s)$:
+\begin{align}
+    v_\pi(s) &:= \E_{\pi}\left[\sum_{k=0}^\infty \gamma^k R_{t+k+1} | S_t = s\right]\\
+    &= \E_{\pi}\left[R_t + \gamma \sum_{k=0}^\infty \gamma^k R_{t+k+2} | S_t = s\right] \\
+    &= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r+\gamma v_\pi(s')].\label{eq:be1}
+\end{align}
+
+The value function $v_\pi(s)$ satisfies a recursive equation, called the \emph{Bellman Equation}. $v_\pi$ is actually the unique solution to its Bellman equation.
+
+\begin{definition}[Partial Ordering of Policies]
+We define a partial ordering: $\pi \ge \pi'$ iff $v_\pi(s) \ge v_\pi'(s)$ for all $s\in \mathcal{S}$.
+\end{definition}
+
+\begin{claim}[Optimal Policy]
+There exists a optimal policy $\pi^\star$ exists which is better than all other policies under the partial ordering, and satisfies:
+\begin{align}
+    v_\star(s) &= \max_\pi v_\pi(s). \\
+    q_\star(s,a) &= \max_\pi q_\pi(s,a).
+\end{align}
+
+Moreover, we have:
+\begin{equation}
+    q_\star(s,a) = \E[R_{t+1} + \gamma v_\star(S_{t+1})|S_t =s, A_t = a].
+\end{equation}
+\end{claim}
+
+The policy $v_\star$ satisfies the Bellman Equations, but note in particular that the value of the state must be the expected return for the best action in that state:
+\begin{align}
+    v_\star(s) = \max_a q_\star(s,a) &= \max_a \E[R_{t+1} + \gamma v_\star(S_{t+1})|S_t=s, A_t=a] \\
+    &= \max_a \sum_{s',r} p(s',r|s,a) [r+\gamma v_\star(s')] 
+\end{align}
+(Compare this to Eq. \ref{eq:be1}. Basically we are saying that our optimal policy is greedy w.r.t. to the maximizers, i.e. the probability mass $\sum_{a \in \{a^\star\}} \pi(a|s) = 1$ for the optimal action $\{a^\star\}= \argmax_a q_\star(s,a)$ - see the discussion on pg. 64)
+
+In addition, we can also write Bellman Equations for $q_\star$:
+\begin{align}
+    q_\star(s,a) &= \E[R_{t+1} + \gamma \max_{a'} q_\star(S_{t+1},a')|S_t=s, A_t=a]\\
+    &= \sum_{s',r} p(s',r|s,a) [r+\gamma \max_a' q_\star(s',a')].
+\end{align}
+
+The key point is that if we know the system dynamics perfectly, we can solve the Bellman Equations to obtain the optimal player strategy. However (1) often we do not know the system dynamics, (2) solving the Bellman Equations naively by exhaustive search is a bad option computationally. So we need to come up with methods which approximately solve the Bellman Equations.
+
+\section{Dynamic Programming}
+solving bellman eq assuming perfect knowledge of state dynamics.
 
 \end{document}
