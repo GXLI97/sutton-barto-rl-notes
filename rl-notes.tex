@@ -59,7 +59,7 @@ How can we exploit this knowledge?
 \subsection{Incremental Updates}
 The main point is that we can write our updates of the action-value pairs $Q_t(a)$ in an incremental fashion, as:
 \begin{equation}
-    Q_{t+1}(a_t) = Q_{t}(a_t) + \eta (R_t(a_t) - Q_{t}(a_t)),
+    Q_{t+1}(a_t) \leftarrow Q_{t}(a_t) + \eta (R_t(a_t) - Q_{t}(a_t)),
 \end{equation}
 
 i.e. when we choose action $a_t$ we update our $Q_t$ proportional to the discrepancy between the true reward we got $R_t$ and our previous belief of the reward $R_t$.
@@ -129,14 +129,14 @@ Note the following condition for $v_\pi(s)$:
     &= \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r+\gamma v_\pi(s')].\label{eq:be1}
 \end{align}
 
-The value function $v_\pi(s)$ satisfies a recursive equation, called the \emph{Bellman Equation}. $v_\pi$ is actually the unique solution to its Bellman equation.
+The value function $v_\pi(s)$ satisfies a recursive equation, called the \emph{Bellman Equation}, and holds \emph{for any policy $\pi$}. $v_\pi$ is actually the unique solution to its Bellman equation.
 
 \begin{definition}[Partial Ordering of Policies]
-We define a partial ordering: $\pi \ge \pi'$ iff $v_\pi(s) \ge v_\pi'(s)$ for all $s\in \mathcal{S}$.
+We define a partial ordering: $\pi \ge \pi'$ iff $v_\pi(s) \ge v_{\pi'}(s)$ for all $s\in \mathcal{S}$.
 \end{definition}
 
 \begin{claim}[Optimal Policy]
-There exists a optimal policy $\pi^\star$ exists which is better than all other policies under the partial ordering, and satisfies:
+There exists a optimal policy $\pi^\star$ which is better than all other policies under the partial ordering ($\pi^\star \ge \pi$), and satisfies:
 \begin{align}
     v_\star(s) &= \max_\pi v_\pi(s). \\
     q_\star(s,a) &= \max_\pi q_\pi(s,a).
@@ -151,19 +151,113 @@ Moreover, we have:
 The policy $v_\star$ satisfies the Bellman Equations, but note in particular that the value of the state must be the expected return for the best action in that state:
 \begin{align}
     v_\star(s) = \max_a q_\star(s,a) &= \max_a \E[R_{t+1} + \gamma v_\star(S_{t+1})|S_t=s, A_t=a] \\
-    &= \max_a \sum_{s',r} p(s',r|s,a) [r+\gamma v_\star(s')] 
+    &= \max_a \sum_{s',r} p(s',r|s,a) [r+\gamma v_\star(s')] \label{eq:be2}
 \end{align}
 (Compare this to Eq. \ref{eq:be1}. Basically we are saying that our optimal policy is greedy w.r.t. to the maximizers, i.e. the probability mass $\sum_{a \in \{a^\star\}} \pi(a|s) = 1$ for the optimal action $\{a^\star\}= \argmax_a q_\star(s,a)$ - see the discussion on pg. 64)
 
 In addition, we can also write Bellman Equations for $q_\star$:
 \begin{align}
     q_\star(s,a) &= \E[R_{t+1} + \gamma \max_{a'} q_\star(S_{t+1},a')|S_t=s, A_t=a]\\
-    &= \sum_{s',r} p(s',r|s,a) [r+\gamma \max_a' q_\star(s',a')].
+    &= \sum_{s',r} p(s',r|s,a) [r+\gamma \max_{a'} q_\star(s',a')].
 \end{align}
 
 The key point is that if we know the system dynamics perfectly, we can solve the Bellman Equations to obtain the optimal player strategy. However (1) often we do not know the system dynamics, (2) solving the Bellman Equations naively by exhaustive search is a bad option computationally. So we need to come up with methods which approximately solve the Bellman Equations.
 
 \section{Dynamic Programming}
-solving bellman eq assuming perfect knowledge of state dynamics.
+Here, we consider a way to solve the Bellman Equation (approximately) if we assume perfect knowledge of the state dynamics (i.e. we know $p(s',r|s,a)$). Our objective is to compute the state-value $v_\pi(s)$ and action-value functions $q_\pi(s,a)$ given knowledge of $p$.
+
+\subsection{Policy Evaluation: Computing $v_\pi$}
+
+Suppose we have some policy $\pi$. Our task is to compute the value function $v_\pi(s)$ for all $s\in \mathcal{S}$. From our Bellman Equation (\ref{eq:be1}):
+\begin{equation}
+    v_\pi(s) = \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r+\gamma v_\pi(s')].
+\end{equation}
+
+\begin{claim}[Iterative Policy Evaluation.]
+$v_\pi(s)$ is a fixed point of this recursive Bellman equation, so we can actually solve for $v_\pi$ by initializing $v_0$ and updating until convergence:
+
+\begin{equation}
+    v_{k+1}(s) \leftarrow \sum_a \pi(a|s) \sum_{s',r} p(s',r|s,a) [r+\gamma v_k(s')]. \label{eq:ipe}
+\end{equation}
+
+At each step, we update the value of $v_{k+1}$ for each $s$, then use those new updates on the RHS of the equation.
+
+The claim is that this converges eventually. (How fast is another matter that is not addressed by Sutton-Barto.)
+\end{claim}
+
+\subsection{Policy Improvement: How to change $\pi$}
+\begin{theorem}[Policy Improvement Theorem]
+Let $\pi$, $\pi'$ be deterministic policies such that for all $s\in\mathcal{S}$:
+\begin{equation}
+    q_\pi(s,\pi'(s)) \ge v_\pi(s).
+\end{equation}
+
+In other words, at each state $s$, following $\pi'$ for one step, then switching back to $\pi$, is always at least as good as following $\pi$. Then we must have $\pi'\ge \pi$, i.e. for all states $s\in\mathcal{S}$
+\begin{equation}
+    v_{\pi'}(s) \ge v_\pi(s).
+\end{equation}
+This means that following $\pi'$ always is at least as good as following $\pi$ always.
+\end{theorem}
+
+\begin{proof}
+Proof deferred to Sutton-Barto pg. 78.
+\end{proof}
+
+This gives us a way to update policies. Suppose we have computed some $q_\pi(s,a)$ for a given policy $\pi$. For instance, $q_\pi(s,a)$ can be computed from $v_\pi(s)$. Now consider the new policy:
+\begin{equation}
+    \pi'(s) := \argmax_a q_\pi(s,a).\label{eq:pimp}
+\end{equation}
+
+This new policy satisfies the conditions of the Policy Improvement Theorem, so we see that $\pi'$ is at least as good as $\pi$.
+
+A second point is that if $\pi'$ as calculated above performs the same as $\pi$ ($v_\pi(s) = v_{\pi'}(s)$ for all $s$), then it must be the case that $\pi$ and $\pi'$ are both optimal policies. This can be seen by relating this to the Bellman Equation for optimality (\ref{eq:be2}).
+
+Conversely, if $\pi'$ is not an optimal policy, then the update must give us a strict improvement.
+
+The last note is that these results on deterministic policies can be extended to stochastic policies, but this is not shown in Sutton-Barto.
+
+\subsection{Policy/Value Iteration}
+Policy iteration just means applying both policy evaluation and policy improvement one after the other to eventually find $\pi^\star$, an optimal policy, so it's not particularly interesting.
+
+However, note that evaluation and improvement are not the same in terms of computation. Evaluation requires us iteratively updating value functions until we reach convergence, and it is unclear how long this may take (typically we can cut it off when we do not make sufficient improvement). Improvement is much easier, because it is a one-step update (Eq. \ref{eq:pimp}). This leads us to try to make policy evaluation faster.
+
+The easiest thing to do is only apply one step of the update (\ref{eq:ipe}). We can actually dress up the evaluation and improvement step into one equation.
+
+\begin{definition}[Value Iteration Update]
+Update the values as:
+\begin{equation}
+v_{k+1}(s) \leftarrow \max_a \sum_{s',r} p(s',r|s,a) [r+\gamma v_k(s')]. 
+\end{equation}
+
+At the end, the explicit policy that we compute is:
+\begin{equation}
+    \pi(s) = \argmax_a \sum_{s',r} p(s',r|s,a) [r+\gamma v_\text{end}(s')]
+\end{equation}
+
+\end{definition}
+
+\section{Monte Carlo Methods}
+We take one step further and consider when we do not have perfect knowledge of the system dynamics, i.e. our player must also estimate these system dynamics.
+
+A note about this section. We go back to looking at the episodic setting for finite MDPs. Only in between episodes do we ever make any updates.
+
+\subsection{MC Estimation: Learning $v_\pi$}
+
+Essentially, we average the empirical values of $v_\pi$ that we get in order to obtain an estimate. Recall that $v_\pi(s)$ is the expected reward of the future, given that we start in state $s$. Therefore, once we see $s$, we can compute the empirical reward over the rest of the episode and include that in our estimates. 
+
+\begin{definition}[First Visit MC]
+We sample episodes under a policy $\pi$. For each state $s$, we average the aggregate reward for the episode using only first visits to $s$.
+\end{definition}
+
+\begin{definition}[Every Visit MC]
+We sample episodes under a policy $\pi$. For each state $s$, we average the aggregate reward for the episode using all visits to $s$.
+\end{definition}
+
+As the number of visits to $s$ goes to infinity, both converge to $v_\pi(s)$ by concentration of average. The main reason why we consider first visit MC is because we have unbiased estimators, which makes analysis easier.
+
+\subsection{MC Estimation: Learning $q_\pi(s,a)$}
+
+If we do not have access to the system dynamics, state values $v_\pi$ are not sufficient. We need to actually estimate the state-action value $q_\pi(s,a)$ to determine an optimal policy. Note that this can be much harder - before we were estimating $|\mathcal{S}|$ values, but now we are be estimating $|\mathcal{S}|\times |\mathcal{A}|$ values.
+
 
 \end{document}
